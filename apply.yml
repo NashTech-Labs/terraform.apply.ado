@@ -1,0 +1,50 @@
+parameters:
+- name: 'workingDirectory'
+  type: string
+  default: ''
+
+- name: workspace
+  type: string
+  default: ''
+
+- name: 'initbackend'
+  type: string
+  default: ''
+  
+- name: ProjectName
+  type: string
+  default: "Testing"
+  
+- name: 'provider'
+  type: string
+  default: 'azuerm'
+
+- name: 'applycommandOptions'
+  type: string
+  default: '-auto-approve'
+
+- name: ServiceConnectionNameAzureRM
+  type: string
+  default: ''
+
+steps:
+
+- script: |
+    terraform apply ${{ parameters.applycommandOptions }}
+  workingDirectory: '${{ parameters.workingDirectory}}'
+  displayName: "Terraform Apply Using TF Workspace for ${{ parameters.ProjectName }}"
+  name: "TerraformApplyTFworkspace"
+  condition: eq( ${{ parameters.initbackend }}, 'tfworkspace')
+  env:
+    TF_WORKSPACE: "${{ parameters.workspace}}"
+
+- task: TerraformTaskV4@4
+  displayName: " Terraform  Apply Using Azure Backend for ${{ parameters.ProjectName }}"
+  name: "TerraformApplyAzure"
+  condition: eq( ${{ parameters.initbackend }}, 'azure')
+  inputs:
+    provider: ${{ parameters.provider }}
+    command: 'apply'
+    commandOptions: ${{ parameters.applycommandOptions }}
+    environmentServiceNameAzureRM: ${{ parameters.ServiceConnectionNameAzureRM }}
+    workingDirectory: '${{ parameters.workingDirectory}}'
